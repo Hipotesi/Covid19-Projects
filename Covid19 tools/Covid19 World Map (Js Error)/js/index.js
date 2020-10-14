@@ -199,3 +199,4 @@ function closeAllInfoWindows() {
         objInfoWindows[infoWinKey].close();
     }
 }
+
