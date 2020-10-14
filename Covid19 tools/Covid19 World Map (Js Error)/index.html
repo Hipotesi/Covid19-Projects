@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+
+    <!-- Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- Font Awesome icons -->
+    <script src="https://kit.fontawesome.com/358c7d921e.js" crossorigin="anonymous"></script>
+
+    <!-- Custom stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/loader.css">
+    <link rel="stylesheet" href="css/errorModal.css">
+    <link rel="stylesheet" href="css/studentTable.css">
+    <!-- Custom scripts -->
+    <script defer src="js/constants.js"></script>
+    <script defer src="js/util.js"></script>
+    <script defer src="js/index.js"></script>
+
+    <script src="https://unpkg.com/@google/markerclustererplus@4.0.1/dist/markerclustererplus.min.js"></script>
+    <script defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKBXdCmWV-2chRvozRWUQnT2W2nYnQy2E&callback=initMap"></script>
+
+    <title>Mapa de casos y estadísticas COVID-19</title>
+</head>
+
+<body>
+    <h1 class="tituloMapa">Mapa de casos y estadísticas <b class="virusType">COVID-19</b></h1>
+    <div class="container-fluid" id="first-row">
+        <div class="row">
+            <div class="col-12 col-lg-9">
+                <div id="map"></div>
+            </div>
+            <div class="col-12 col-lg-3 mt-3">
+                <div class="card text-center">
+                    <div class="card-header font-weight-bold text text-uppercase">
+                        Casos confirmados por país
+                    </div>
+                    <div class="card-body d-flex justify-content-center">
+                        <table id="countryCasesTable">
+                            <thead>
+                                <tr>
+                                    <th>Pos.</th>
+                                    <th>País</th>
+                                    <th>Casos</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-3" id="global-stats">
+        <div class="card-deck">
+            <div class="card text-center">
+                <div class="card-header font-weight-bold text-uppercase">
+                    Última actualización
+                </div>
+                <div class="card-body d-flex justify-content-center align-items-center">
+                    <span id="lastUpdated"></span>
+                </div>
+            </div>
+            <div class="card text-center">
+                <div class="card-header font-weight-bold text-uppercase">
+                    Casos confirmados
+                </div>
+                <div class="card-body text-secondary d-flex justify-content-center align-items-center">
+                    <span id="globalConfirmedCases"></span>
+                </div>
+            </div>
+            <div class="card text-center">
+                <div class="card-header font-weight-bold text-uppercase">
+                    Casos activos
+                </div>
+                <div class="card-body text-warning d-flex justify-content-center align-items-center">
+                    <span id="globalActiveCases"></span>
+                </div>
+            </div>
+            <div class="card text-center">
+                <div class="card-header font-weight-bold text-uppercase">
+                    Casos cerrados
+                </div>
+                <div id="recovered-deaths" class="card-body d-flex justify-content-center">
+                    <div class="row">
+                        <div class="col">
+                            <h6>Recuperados</h6>
+                            <div>
+                                <span id="globalRecovered" class="text-success"></span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h6>Muertes</h6>
+                            <div>
+                                <span id="globalDeaths" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="container-fluid mt-4">
+        <div class="row border bg-light d-flex justify-content-center">
+            <div class="col d-flex justify-content-around align-items-center p-2">
+                <a href="#" data-toggle="modal" data-target="#modalAbout">Acerca de</a>
+                <a href="#" data-toggle="modal" data-target="#modalSource">Fuente</a>
+                <a href="#" data-toggle="modal" data-target="#modalCredits">Créditos</a>
+            </div>
+        </div>
+    </footer>
+
+    <div class="googleMapMarkerContainer">
+        <div class="googleMapMarker">
+            <div style="display:flex; flex-direction: column; align-items: center; padding-bottom: 1em;">
+                <img class="countryFlag" style="width: 60%;">
+            </div>
+            <div style="display:flex; flex-direction: column; align-items: center;">
+                <div>
+                    <b>Casos: </b><span id="cases"></span><br>
+                </div>
+                <div>
+                    <b>Muertes: </b><span id="deaths"></span><br>
+                </div>
+                <div>
+                    <b>Recuperados: </b><span id="recovered"></span><br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="googleMapRightControlContainer">
+        <div class="googleMapRightControl">
+            <div style="display:flex; flex-direction: column; align-items: center; padding-bottom: 1em;">
+                <img class="countryFlag" style="width: 60%;">
+                <h5 style="margin: 3px 0 0 0;" id="countryName"></h5>
+            </div>
+            <div style="display:flex; justify-content: center;">
+                <table>
+                    <tr>
+                        <td><b>Casos</b></td>
+                        <td id="casesCell"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Nuevos hoy</b></td>
+                        <td id="todayCasesCell"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Muertes</b></td>
+                        <td id="deathsCell"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Muertes hoy</b></td>
+                        <td id="todayDeathsCell"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Recuperados</b></td>
+                        <td id="recoveredCell"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Activos</b></td>
+                        <td id="activeCasesCell"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Críticos</b></td>
+                        <td id="criticalCasesCell"></td>
+                    </tr>
+                    <tr>
+                        <td><b>Casos/millón</b></td>
+                        <td id="casesPerMillionCell"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Loading -->
+    <div id="modalLoading" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <div class="lds-ellipsis">
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                        <div></div>
+                    </div>
+                    <h5 class="modal-title">Obteniendo datos...</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal About -->
+    <div class="modal fade" id="modalAbout" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-info-circle"></i>
+                        <h5 class="modal-title">Acerca de</h5>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-justify">
+                    <p>
+                        Este mapa fue creado por un joven desarrollador de 13 años
+                        llamado Edu Olivares, alias Hipotesi. Dado a la crisis mundial actual
+                        he decidido hacer este mapa para que la sociedad se oriente, y sepa lo que pasa.
+                    </p>
+
+                    <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample">Info. para
+                        desarrolladores</a>
+                    <div class="collapse" id="collapseExample">
+                        <div class="card card-body">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <span>
+                                        El código fuente del sitio puede ser consultado
+                                        <a href="#">aquí</a>.
+                                    </span>
+                                </li>
+                                <li class="list-group-item">
+                                    <span>
+                                        La obtención de los datos se hace a través de esta
+                                        <a href="https://corona.lmao.ninja/" target="_blank">API</a>.
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Source -->
+    <div class="modal fade" id="modalSource" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-search"></i>
+                        <h5 class="modal-title">Fuente</h5>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    Todos los datos son obtenidos de
+                    <a href="https://www.worldometers.info/coronavirus/"
+                        target="_blank">worldometers.info/coronavirus</a>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Credits -->
+    <div class="modal fade" id="modalCredits" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-hands-helping"></i>
+                        <h5 class="modal-title">Créditos</h5>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>
+                        <b>Crédito para los desarrolladores de esta app.</b>
+                    </p>
+                    <div class="table-users">
+                        <table cellspacing="0">
+                            <tr>
+                                <th>Foto</th>
+                                <th>Nombre</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img class="imgx"
+                                        src="https://avatars3.githubusercontent.com/u/67026719?s=460&u=5c464bad4d8bd4008c34e95ef9642142a644edc8&v=4"
+                                        alt="">
+                                </td>
+                                <td>Edu Olivares</td>
+                            </tr>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
